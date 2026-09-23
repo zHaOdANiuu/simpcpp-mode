@@ -1,6 +1,6 @@
 * Simple C++ mode for Emacs
 
-This is a *C++* specialized version of simpc-mode.  [[https://github.com/rexim/simpc-mode][simpc++-mode]] provides richer
+This is a *C++* specialized version of [[https://github.com/rexim/simpc-mode][simpc-mode]].  simpc++-mode provides richer
 highlighting for C++ files, and that's it.  It keeps fast opening, efficient
 editing, and quick jumping.
 
