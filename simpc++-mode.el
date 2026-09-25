@@ -97,65 +97,58 @@
 
 (defcustom simpc++-font-lock-keywords
   `(;; initilation
-    ("^\\s-*#\\s-*\\(warn\\|error\\)" 0 font-lock-warning-face)
-    ("^\\s-*#\\s-*\\(?:[a-zA-Z0-9_]+\\)" 0 font-lock-preprocessor-face)
-    ("^\\s-*#\\s-*include\\(?:_next\\)?\\s-+\\(\\(<\\|\"\\).*\\(>\\|\"\\)\\)" 1 font-lock-string-face)
-    ("\\b\\(defined\\)\\b" 1 font-lock-preprocessor-face)
+    ("^[ \t]*#[ \t]*\\(warn\\|error\\)" 0 font-lock-warning-face)
+    ("^[ \t]*#[ \t]*\\(?:[a-zA-Z0-9_]+\\)" 0 font-lock-preprocessor-face)
+    ("^[ \t]*#[ \t]*include\\(?:_next\\)?\\s-+\\(\\(<\\|\"\\).*\\(>\\|\"\\)\\)" 1 font-lock-string-face)
+    ("\\_<\\(defined\\)\\_>" 1 font-lock-preprocessor-face)
+    ("\\(?:@\\|\\\\\\)\\(?:param\\|tparam\\|brief\\|return\\|returns\\|retval\\|note\\|warning\\|see\\|sa\\|author\\|date\\|todo\\|throw\\|throws\\|exception\\|deprecated\\|since\\|file\\|class\\|struct\\|fn\\|var\\|def\\|namespace\\|enum\\|property\\|ingroup\\|addtogroup\\)\\_>"
+     0 font-lock-keyword-face)
     (,(regexp-opt simpc++-keywords 'symbols) 0 font-lock-keyword-face)
     (,(regexp-opt simpc++-types 'symbols) 0 font-lock-type-face)
 
-    ;; const var
-    ("\\_<\\(?:true\\|false\\|nullptr\\|0[xX][0-9a-fA-F_]+\\|0[bB][01_]+\\|[0-9][0-9_]*\\(?:\\.[0-9_]*\\)?\\(?:[eE][+-]?[0-9_]*\\)?[uUlLfF]*\\)\\_>"
+    ;; define
+    ("\\<\\(?:enum\\|using\\|struct\\|class\\)[ \t]\\([a-zA-Z0-9_]+\\)"
+     1 font-lock-type-face)
+    ("\\<typedef\\b[ \t][a-zA-Z_][a-zA-Z0-9_]*[ \t]\\([a-zA-Z_][a-zA-Z0-9_]*\\)[ \t];"
+     1 font-lock-type-face)
+    ("\\<typedef\\b[^}]*}[ \t]\\([a-zA-Z_][a-zA-Z0-9_]*\\)"
+     1 font-lock-type-face)
+
+    ;; std::xxx
+    ("\\_<\\([a-zA-Z_][a-zA-Z0-9_]*\\)::" 1 font-lock-constant-face)
+
+    ;; vector<T> / Map<K,V>
+    ("\\_<\\([A-Za-z_][A-Za-z0-9_]*\\)<"
+     (1 font-lock-type-face)
+     ("\\(?:,[A-Za-z_][A-Za-z0-9_]*\\)?\\([A-Za-z_][A-Za-z0-9_]*\\)\\s-*\\(?:,\\|>\\|<\\|$\\)"
+      nil nil (1 font-lock-type-face)))
+
+    ;; int a / int& b / type_t c
+    ("^[ \t]*\\(?:[ \t]+\\)*\\([A-Za-z_][A-Za-z0-9_:]*\\(?:[ \t]*<[^;{}()]*>\\)?\\)[ \t*&]+[*&]*[ \t]*\\([A-Za-z_][A-Za-z0-9_]*\\)[ \t]*[*&]*[ \t]*\\(?:[;=,{\\[]\\)"
+     (1 font-lock-type-face))
+    ("\\_<\\([A-Za-z_][A-Za-z0-9_]*_t\\)\\_>" 1 font-lock-type-face)
+
+    ;; 0 / 123
+    ("\\_<\\(?:0[xX][0-9a-fA-F']+\\|0[bB][01']+\\|0[0-7']+\\|[0-9][0-9']*\\(?:\\.[0-9']*\\)?\\(?:[eE][+-]?[0-9']+\\)?[uUlLfFzZ]*\\)\\_>"
      0 font-lock-constant-face)
 
-    ;; define
-    ("\\<\\(?:enum\\|using\\|struct\\|class\\)\\s-+\\([a-zA-Z0-9_]+\\)"
-     1 font-lock-type-face)
-    ("\\<typedef\\b\\s-+[a-zA-Z_][a-zA-Z0-9_]*\\s-+\\([a-zA-Z_][a-zA-Z0-9_]*\\)\\s-*;"
-     1 font-lock-type-face)
-    ("\\<typedef\\b[^}]*}\\s-+\\([a-zA-Z_][a-zA-Z0-9_]*\\)" 1
-     font-lock-type-face)
+    ;; function return type: type func()
+    ("^[ \t]*\\([A-Za-z_][A-Za-z0-9_:]*\\(?:[ \t]*<[^;{}()]*>\\)?\\)[ \t*&]*" (1 font-lock-type-face))
 
-    ;; variable: int a;
-    ("\\_<\\([A-Za-z_][A-Za-z0-9_]*\\)[ \t]+[A-Za-z_][A-Za-z0-9_]*[ \t]*[;=,{)]"
-     1 font-lock-type-face)
+    ;; function name: funcname ()
+    ("\\_<\\([a-zA-Z_][a-zA-Z0-9_]*\\)[ \t]*(" 1 'font-lock-function-name-face)
 
-    ;; class
-    ;; namespace: std::
-    ("\\_<\\([a-zA-Z_][a-zA-Z0-9_]*\\)::"
-     1 font-lock-constant-face)
-
-    ;; generics: Map<K, vector<V>>
-    ("\\_<\\([a-zA-Z_][a-zA-Z0-9_]*\\)<"
-     (1 font-lock-type-face)
-     ("\\(?:,\\s-*\\)?\\(\\sw+\\)\\s-*\\(?:,\\|>\\|<\\|$\\)"
-      nil nil (1 font-lock-type-face)))
-
-    ;; function
-    ;; tymplate: typename A / class A
-    ("\\_<\\(?:typename\\|class\\)\\s-+\\([a-zA-Z_][a-zA-Z0-9_]*\\)"
-     1 font-lock-type-face)
+    ;; template<typename T> / class T
+    ("\\_<\\(?:typename\\|class\\)\\_>[ \t]+\\([A-Za-z_][A-Za-z0-9_]*\\)" 1 font-lock-type-face)
 
     ;; C++ end return type:：) -> Type {
-    (")[ \t]*->[ \t]*\\([^{\n]+\\)[ \t]*{"
-     1 font-lock-type-face)
+    (")[ \t]*->[ \t]*\\([A-Za-z_][A-Za-z0-9_:<>]*\\)" 1 font-lock-type-face)
 
-    ;; function name: test()
-    ("\\b\\([a-zA-Z_][a-zA-Z0-9_]*\\)[ \t]*("
-     1 font-lock-function-name-face)
+    ;; [[nodiscard]] [[deprecated]]
+    ("\\[\\[[ \t]*\\([A-Za-z_][A-Za-z0-9_]*\\)" 1 font-lock-builtin-face)
 
-    ;; function define: type Name(args)
-    ("\\_<\\([a-zA-Z_][a-zA-Z0-9_]*\\)[ \t]*[*&]*\\(?:[ \t]*\n[ \t]*\\|[ \t]+\\)\\_<\\([a-zA-Z_][a-zA-Z0-9_]*\\)\\s-*("
-     (1 font-lock-type-face)
-     (2 font-lock-function-name-face)
-     ("\\_<\\([a-zA-Z_][a-zA-Z0-9_]*\\)\\s-*[*&]*\\s-*\\(?:\\_<[a-zA-Z_][a-zA-Z0-9_]*\\_>\\s-*[*&]*\\s-*\\)?[,)]"
-      nil nil (1 font-lock-type-face)))
-
-    ;; function pointer: type (*Name)(args)
-    ("(\\*\\([a-zA-Z_][a-zA-Z0-9_]*\\)\\s-*)\\s-*("
-     (1 font-lock-function-name-face)
-     ("\\_<\\([a-zA-Z_][a-zA-Z0-9_]*\\)\\s-*[*&]*\\s-*\\(?:\\_<[a-zA-Z_][a-zA-Z0-9_]*\\_>\\s-*[*&]*\\s-*\\)?[,)]"
-      nil nil (1 font-lock-type-face))))
+    ;; __attribute__ / __declspec
+    ("\\_<\\(__attribute__\\|__declspec\\)\\_>" 1 font-lock-builtin-face))
   "Simplea C++ face lock list."
   :group 'simpc++-mode)
 

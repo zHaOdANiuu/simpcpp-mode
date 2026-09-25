@@ -4,7 +4,7 @@ vec* abc;
 vec *abc;
 vec& abc;
 vec &abc;
-ptrdiff_t baselen, prefixlen;
+customtype baselen, prefixlen;
 ptrdiff_t *baselen, *prefixlen;
 ptrdiff_t &baselen, &prefixlen;
 test<a, b, c>{};
@@ -33,14 +33,21 @@ auto add(F, B);
 
 void test2(vec a, vec2 b, vec3);
 void* test2(vec a, vec2 b, vec3);
-void& test2(vec a, vec2 b, vec3);
+void& test2(Fn&& a, vec2 b, vec3);
 ttt abc(vec* a, vec2 *b, vec3& c, vec4 &d);
 auto abc(vec* a, vec2 *b, vec3& c, vec4 &d) -> int;
 
-Lisp_Object
-get_abc(Lisp_Object object, bool error_if_not_keymap, bool autoload);
+Lisp_Object get_abc(Lisp_Object object, bool error_if_not_keymap, bool autoload);
+
+std::is_function_v<std::remove_pointer_t<Fn>>;
+
+InvokeHelper(const Fn& callback) : callback(callback) {}
+
+InvokeHelper(Fn&& callback) : callback(std::move(callback)) {}
+
+explicit Webview2ComPtr(Fn callback) : UnwrapArguments<Base, Fn>::Forward(std::move(callback)) {}
 
 (*test3)(vec a, vec2, vec3 c, vec4);
-(*test4)(vec* a, vec2, vec3 *c, vec4);
+(*test4)(vec* a, vec2&& b, vec3 *c, vec4);
 (*test4)(vec& a, vec2, vec3 &c, vec4);
 ////////////////////////////
